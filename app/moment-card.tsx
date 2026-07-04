@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import { saveCard, shareCard } from "../lib/cards.js";
 
 let latestSpike: { collective: number; peerCount: number; minute: number; personalMax: number } | null = null;
 let momentCount = 0;
@@ -25,30 +25,57 @@ export default function MomentCardScreen() {
 
   const number = momentCount > 0 ? momentCount : 1;
 
+  const caption =
+    spike.collective > 90
+      ? "The Crowd Explodes"
+      : spike.collective > 70
+      ? "Collective Roar"
+      : spike.collective > 50
+      ? "Building Momentum"
+      : "Crowd Stirs";
+
+  const card = {
+    number,
+    minute: spike.minute,
+    pulse: Math.round(spike.collective),
+    caption,
+    peerCount: spike.peerCount,
+    personalBest: spike.personalMax > 0,
+  };
+
+  const handleSave = async () => {
+    await saveCard(card);
+  };
+
+  const handleShare = async () => {
+    await shareCard(card);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <Text style={styles.momentNumber}>Moment #{String(number).padStart(2, "0")}</Text>
         <Text style={styles.minute}>{spike.minute}'</Text>
-        <Text style={styles.pulse}>Crowd Pulse {Math.round(spike.collective)}%</Text>
-        <Text style={styles.caption}>
-          {spike.collective > 90
-            ? "The Crowd Explodes"
-            : spike.collective > 70
-            ? "Collective Roar"
-            : spike.collective > 50
-            ? "Building Momentum"
-            : "Crowd Stirs"}
-        </Text>
+        <Text style={styles.pulse}>Crowd Pulse {card.pulse}%</Text>
+        <Text style={styles.caption}>{caption}</Text>
         <Text style={styles.meta}>
           {spike.peerCount + 1} nearby fans synchronized
         </Text>
-        {spike.personalMax > 0 && (
+        {card.personalBest && (
           <Text style={styles.highlight}>Your loudest moment so far</Text>
         )}
       </View>
 
       <Text style={styles.generated}>Generated locally</Text>
+
+      <View style={styles.actions}>
+        <Pressable style={styles.actionButton} onPress={handleSave}>
+          <Text style={styles.actionText}>Save</Text>
+        </Pressable>
+        <Pressable style={styles.actionButton} onPress={handleShare}>
+          <Text style={styles.actionText}>Share</Text>
+        </Pressable>
+      </View>
 
       <Pressable style={styles.backButton} onPress={() => router.back()}>
         <Text style={styles.backText}>Back</Text>
@@ -117,6 +144,23 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
     fontSize: 10,
     color: "#B8B8B8",
+  },
+  actions: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  actionButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FFFFFF",
+  },
+  actionText: {
+    fontFamily: "monospace",
+    fontSize: 11,
+    color: "#000000",
   },
   backButton: {
     paddingHorizontal: 32,

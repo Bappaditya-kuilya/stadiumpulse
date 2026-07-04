@@ -1,11 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { startPulse, stopPulse } from "../lib/pulse.js";
+import { requestPermissions, onNotificationResponse } from "../lib/notifications.js";
 
 export default function JoinScreen() {
   const router = useRouter();
   const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    requestPermissions();
+    const sub = onNotificationResponse((_data: any) => {
+      router.push("/moment-card");
+    });
+    return () => sub.remove();
+  }, []);
 
   const handleJoin = () => {
     setStatus("connecting");
@@ -36,7 +45,7 @@ export default function JoinScreen() {
           style={[styles.button, status === "connected" && styles.buttonActive]}
           onPress={status === "connected" ? () => { stopPulse(); setStatus("idle"); } : handleJoin}
         >
-          <Text style={styles.buttonText}>
+          <Text style={[styles.buttonText, status === "connected" && styles.buttonTextActive]}>
             {status === "connected" ? "Leave" : "Join the crowd"}
           </Text>
         </Pressable>
@@ -99,6 +108,9 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: "#000000",
     letterSpacing: 0,
+  },
+  buttonTextActive: {
+    color: "#FFFFFF",
   },
   cardLink: {
     paddingHorizontal: 16,
