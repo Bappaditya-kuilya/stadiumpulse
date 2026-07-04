@@ -1,8 +1,26 @@
+import { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
+import { startPulse, stopPulse } from "../lib/pulse.js";
 
 export default function JoinScreen() {
   const router = useRouter();
+  const [status, setStatus] = useState("idle");
+
+  const handleJoin = () => {
+    setStatus("connecting");
+
+    startPulse("match-1", {
+      onReading: (data: { local: number; collective: number; peerCount: number }) => {
+        console.log("pulse:", data.collective);
+      },
+      onSpike: (data: { collective: number; peerCount: number; minute: number }) => {
+        console.log("SPIKE detected:", data);
+      },
+    });
+
+    setStatus("connected");
+  };
 
   return (
     <View style={styles.container}>
@@ -10,9 +28,24 @@ export default function JoinScreen() {
         <Text style={styles.title}>Stadium{"\n"}Pulse</Text>
         <Text style={styles.subtitle}>Crowd intelligence. On-device.</Text>
 
-        <Pressable style={styles.button} onPress={() => router.push("/moment-card")}>
-          <Text style={styles.buttonText}>Join the crowd</Text>
+        {status === "connected" && (
+          <Text style={styles.status}>Listening to the crowd...</Text>
+        )}
+
+        <Pressable
+          style={[styles.button, status === "connected" && styles.buttonActive]}
+          onPress={status === "connected" ? () => { stopPulse(); setStatus("idle"); } : handleJoin}
+        >
+          <Text style={styles.buttonText}>
+            {status === "connected" ? "Leave" : "Join the crowd"}
+          </Text>
         </Pressable>
+
+        {status === "connected" && (
+          <Pressable style={styles.cardLink} onPress={() => router.push("/moment-card")}>
+            <Text style={styles.cardLinkText}>View Moment Card →</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -27,7 +60,7 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: "center",
-    gap: 32,
+    gap: 24,
   },
   title: {
     fontFamily: "monospace",
@@ -43,6 +76,11 @@ const styles = StyleSheet.create({
     color: "#5A5A5A",
     letterSpacing: -0.02,
   },
+  status: {
+    fontFamily: "monospace",
+    fontSize: 12,
+    color: "#B8B8B8",
+  },
   button: {
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 32,
@@ -51,11 +89,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
+  buttonActive: {
+    backgroundColor: "#000000",
+    borderColor: "#000000",
+  },
   buttonText: {
     fontFamily: "monospace",
     fontSize: 11,
     fontWeight: "400",
     color: "#000000",
     letterSpacing: 0,
+  },
+  cardLink: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  cardLinkText: {
+    fontFamily: "monospace",
+    fontSize: 11,
+    color: "#5A5A5A",
   },
 });

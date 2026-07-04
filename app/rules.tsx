@@ -59,14 +59,14 @@ const styles = StyleSheet.create({
   question: {
     fontFamily: "monospace",
     fontSize: 16,
-    fontWeight: "55",
+    fontWeight: "400",
     color: "#000000",
     letterSpacing: -0.03,
   },
   answer: {
     fontFamily: "monospace",
     fontSize: 14,
-    fontWeight: "55",
+    fontWeight: "400",
     color: "#5A5A5A",
     letterSpacing: -0.02,
     lineHeight: 20,
