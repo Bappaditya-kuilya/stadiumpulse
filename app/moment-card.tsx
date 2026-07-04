@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { saveCard, shareCard } from "../lib/cards.js";
+import { saveCard, shareCard } from "../lib/cards";
 
 let latestSpike: { collective: number; peerCount: number; minute: number; personalMax: number } | null = null;
 let momentCount = 0;

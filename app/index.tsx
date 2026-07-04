@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { startPulse, stopPulse } from "../lib/pulse.js";
-import { requestPermissions, onNotificationResponse } from "../lib/notifications.js";
+import { startPulse, stopPulse } from "../lib/pulse";
+import { requestPermissions, onNotificationResponse } from "../lib/notifications";
 
 export default function JoinScreen() {
   const router = useRouter();

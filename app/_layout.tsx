@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import { Stack } from "expo-router";
-import { DevOverlay } from "../lib/dev-overlay.js";
+import { DevOverlay } from "../lib/dev-overlay";
 
 export default function RootLayout() {
   return (
