@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { saveCard, shareCard } from "../lib/cards";
 import { getStaticCaption } from "../lib/caption";
+import { translateCaption } from "../lib/pulse";
+import { colors, font, card } from "../lib/theme";
 
 let latestSpike: { collective: number; peerCount: number; minute: number; personalMax: number; caption: string } | null = null;
 let momentCount = 0;
@@ -17,19 +20,29 @@ export function getMomentNumber() {
 
 export default function MomentCardScreen() {
   const router = useRouter();
-  const spike = latestSpike || {
+  const [spike, setSpike] = useState(latestSpike || {
     collective: 0,
     peerCount: 0,
     minute: 0,
     personalMax: 0,
     caption: "",
-  };
+  });
+  const [translated, setTranslated] = useState("");
+
+  useEffect(() => {
+    if (latestSpike) setSpike(latestSpike);
+  }, []);
+
+  useEffect(() => {
+    if (spike.caption) {
+      translateCaption(spike.caption, "es").then(setTranslated);
+    }
+  }, [spike.caption]);
 
   const number = momentCount > 0 ? momentCount : 1;
-
   const caption = spike.caption || getStaticCaption(spike.collective);
 
-  const card = {
+  const cardData = {
     number,
     minute: spike.minute,
     pulse: Math.round(spike.collective),
@@ -39,11 +52,11 @@ export default function MomentCardScreen() {
   };
 
   const handleSave = async () => {
-    await saveCard(card);
+    await saveCard(cardData);
   };
 
   const handleShare = async () => {
-    await shareCard(card);
+    await shareCard(cardData);
   };
 
   return (
@@ -51,12 +64,16 @@ export default function MomentCardScreen() {
       <View style={styles.card}>
         <Text style={styles.momentNumber}>Moment #{String(number).padStart(2, "0")}</Text>
         <Text style={styles.minute}>{spike.minute}'</Text>
-        <Text style={styles.pulse}>Crowd Pulse {card.pulse}%</Text>
+        <Text style={styles.pulse}>{cardData.pulse}%</Text>
+        <Text style={styles.pulseLabel}>CROWD PULSE</Text>
         <Text style={styles.caption}>{caption || "Generating..."}</Text>
+        {translated ? (
+          <Text style={styles.translated}>{translated}</Text>
+        ) : null}
         <Text style={styles.meta}>
           {spike.peerCount + 1} nearby fans synchronized
         </Text>
-        {card.personalBest && (
+        {cardData.personalBest && (
           <Text style={styles.highlight}>Your loudest moment so far</Text>
         )}
       </View>
@@ -82,88 +99,106 @@ export default function MomentCardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: colors.neutral,
     justifyContent: "center",
     alignItems: "center",
-    padding: 30,
+    padding: 40,
     gap: 16,
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.surface,
     borderRadius: 8,
     padding: 16,
     width: "100%",
     gap: 8,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
   },
   momentNumber: {
-    fontFamily: "monospace",
-    fontSize: 11,
-    fontWeight: "400",
-    color: "#5A5A5A",
-    letterSpacing: 0,
+    fontFamily: "System",
+    fontSize: 12,
+    fontWeight: "500",
+    color: colors.secondary,
   },
   minute: {
-    fontFamily: "monospace",
+    fontFamily: "System",
     fontSize: 32,
     fontWeight: "700",
-    color: "#000000",
+    color: colors.onSurface,
   },
   pulse: {
-    fontFamily: "monospace",
-    fontSize: 20,
-    fontWeight: "400",
-    color: "#000000",
+    fontFamily: "System",
+    fontSize: 26,
+    fontWeight: "500",
+    color: colors.primary,
+  },
+  pulseLabel: {
+    fontFamily: "System",
+    fontSize: 10,
+    fontWeight: "500",
+    color: colors.secondary,
+    letterSpacing: 0.1,
   },
   caption: {
-    fontFamily: "monospace",
+    fontFamily: "System",
     fontSize: 16,
     fontWeight: "400",
-    color: "#5A5A5A",
-    letterSpacing: -0.03,
+    color: colors.mutedText,
+    lineHeight: 24,
+  },
+  translated: {
+    fontFamily: "System",
+    fontSize: 14,
+    fontWeight: "400",
+    color: colors.secondary,
+    fontStyle: "italic",
+    lineHeight: 21,
   },
   meta: {
-    fontFamily: "monospace",
-    fontSize: 14,
+    fontFamily: "System",
+    fontSize: 12,
     fontWeight: "400",
-    color: "#B8B8B8",
-    letterSpacing: -0.02,
+    color: colors.secondary,
   },
   highlight: {
-    fontFamily: "monospace",
-    fontSize: 14,
-    fontWeight: "400",
-    color: "#5A5A5A",
-    letterSpacing: -0.02,
+    fontFamily: "System",
+    fontSize: 12,
+    fontWeight: "500",
+    color: colors.secondary,
   },
   generated: {
-    fontFamily: "monospace",
-    fontSize: 10,
-    color: "#B8B8B8",
+    fontFamily: "System",
+    fontSize: 11,
+    color: colors.secondary,
   },
   actions: {
     flexDirection: "row",
     gap: 16,
   },
   actionButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 6,
+    backgroundColor: colors.surface,
+    height: 48,
+    borderRadius: 24,
+    paddingHorizontal: 32,
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#FFFFFF",
+    borderColor: colors.border,
   },
   actionText: {
-    fontFamily: "monospace",
-    fontSize: 11,
-    color: "#000000",
+    fontFamily: "System",
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.mutedText,
   },
   backButton: {
-    paddingHorizontal: 32,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   backText: {
-    fontFamily: "monospace",
-    fontSize: 11,
-    color: "#5A5A5A",
+    fontFamily: "System",
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.secondary,
   },
 });

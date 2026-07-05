@@ -1,14 +1,13 @@
 import { View } from "react-native";
 import { Stack } from "expo-router";
-import { DevOverlay } from "../lib/dev-overlay";
 
 export default function RootLayout() {
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: "#fafafa" }}>
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#F5F5F5" },
+          contentStyle: { backgroundColor: "#fafafa" },
         }}
       >
         <Stack.Screen name="index" />
@@ -18,7 +17,6 @@ export default function RootLayout() {
         />
         <Stack.Screen name="rules" />
       </Stack>
-      <DevOverlay />
     </View>
   );
 }
