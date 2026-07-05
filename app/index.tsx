@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { startPulse, stopPulse } from "../lib/pulse";
+import { startPulse, stopPulse, getCollectivePulse } from "../lib/pulse";
 import { requestPermissions, onNotificationResponse } from "../lib/notifications";
 
 export default function JoinScreen() {
   const router = useRouter();
   const [status, setStatus] = useState("idle");
+  const [pulse, setPulse] = useState(0);
+  const [peerCount, setPeerCount] = useState(0);
+  const pulseRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     requestPermissions();
@@ -14,7 +17,10 @@ export default function JoinScreen() {
       router.push("/moment-card");
     });
     handleJoin();
-    return () => sub.remove();
+    return () => {
+      sub.remove();
+      if (pulseRef.current) clearInterval(pulseRef.current);
+    };
   }, []);
 
   const handleJoin = () => {
@@ -22,14 +28,27 @@ export default function JoinScreen() {
 
     startPulse("match-1", {
       onReading: (data: { local: number; collective: number; peerCount: number }) => {
-        console.log("pulse:", data.collective);
+        setPulse(Math.round(data.collective));
+        setPeerCount(data.peerCount);
       },
-      onSpike: (data: { collective: number; peerCount: number; minute: number }) => {
-        console.log("SPIKE detected:", data);
+      onSpike: (_data: any) => {
+        router.push("/moment-card");
       },
     });
 
     setStatus("connected");
+
+    pulseRef.current = setInterval(() => {
+      setPulse(Math.round(getCollectivePulse()));
+    }, 1000);
+  };
+
+  const handleLeave = () => {
+    stopPulse();
+    if (pulseRef.current) clearInterval(pulseRef.current);
+    setStatus("idle");
+    setPulse(0);
+    setPeerCount(0);
   };
 
   return (
@@ -39,12 +58,22 @@ export default function JoinScreen() {
         <Text style={styles.subtitle}>Crowd intelligence. On-device.</Text>
 
         {status === "connected" && (
+          <View style={styles.liveData}>
+            <Text style={styles.pulseValue}>{pulse}%</Text>
+            <Text style={styles.pulseLabel}>CROWD PULSE</Text>
+            <Text style={styles.peerInfo}>
+              {peerCount} {peerCount === 1 ? "fan" : "fans"} nearby
+            </Text>
+          </View>
+        )}
+
+        {status === "connected" && (
           <Text style={styles.status}>Listening to the crowd...</Text>
         )}
 
         <Pressable
           style={[styles.button, status === "connected" && styles.buttonActive]}
-          onPress={status === "connected" ? () => { stopPulse(); setStatus("idle"); } : handleJoin}
+          onPress={status === "connected" ? handleLeave : handleJoin}
         >
           <Text style={[styles.buttonText, status === "connected" && styles.buttonTextActive]}>
             {status === "connected" ? "Leave" : "Join the crowd"}
@@ -56,6 +85,10 @@ export default function JoinScreen() {
             <Text style={styles.cardLinkText}>View Moment Card →</Text>
           </Pressable>
         )}
+
+        <Pressable style={styles.rulesLink} onPress={() => router.push("/rules")}>
+          <Text style={styles.rulesLinkText}>How it works →</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -85,6 +118,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#5A5A5A",
     letterSpacing: -0.02,
+  },
+  liveData: {
+    alignItems: "center",
+    gap: 4,
+  },
+  pulseValue: {
+    fontFamily: "monospace",
+    fontSize: 48,
+    fontWeight: "700",
+    color: "#000000",
+  },
+  pulseLabel: {
+    fontFamily: "monospace",
+    fontSize: 10,
+    fontWeight: "400",
+    color: "#B8B8B8",
+    letterSpacing: 0.1,
+  },
+  peerInfo: {
+    fontFamily: "monospace",
+    fontSize: 12,
+    color: "#5A5A5A",
   },
   status: {
     fontFamily: "monospace",
@@ -121,5 +176,14 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
     fontSize: 11,
     color: "#5A5A5A",
+  },
+  rulesLink: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  rulesLinkText: {
+    fontFamily: "monospace",
+    fontSize: 11,
+    color: "#B8B8B8",
   },
 });
