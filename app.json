@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "Stadium Pulse",
-    "slug": "stadiumpulse",
-    "scheme": "stadiumpulse",
+    "slug": "stadium-pulse",
+    "scheme": "stadium-pulse",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,10 +20,18 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.anonymous.stadiumpulse"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7fbc1739-02ef-42a4-875e-389a80f7560c"
+      }
+    },
+    "owner": "bappaditya-kuilyas-team"
   }
 }
