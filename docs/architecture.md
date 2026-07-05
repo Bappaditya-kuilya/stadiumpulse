@@ -82,6 +82,13 @@ Microphone
 - Hidden overlay, tap gear icon to toggle
 - Shows live RMS, pulse %, peer count, spike state
 
+### `lib/demo.js` — Demo Mode Simulation
+- **Status:** Working
+- Simulates peer readings with realistic patterns (ramp up → spike → calm)
+- `startDemo(callbacks)` — begins simulated data stream
+- `triggerSpike(callbacks)` — manual spike for demo
+- Auto-activates when no real P2P peers detected
+
 ### `lib/caption.js` — Moment Card Caption Generator
 - **Status:** Code complete, untested on device
 - Loads `LLAMA_3_2_1B_INST_Q4_0` model via QVAC on first pulse start

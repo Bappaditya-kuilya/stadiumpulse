@@ -3,10 +3,10 @@
 ## Critical
 
 ### P2P Layer is Stubbed
-- **Impact:** No real peer discovery, no mesh networking
-- **Cause:** `hyperswarm` npm package requires Node.js `crypto` module, which doesn't exist in React Native
-- **Workaround:** None — app runs single-device only
-- **Fix planned:** Wire `@qvac/sdk` HyperswarmRuntime on physical dev build
+- **Impact:** No real peer-to-peer discovery across devices
+- **Cause:** `hyperswarm` npm package requires Node.js `crypto`, `@qvac/sdk` has no P2P exports
+- **Workaround:** Demo mode with simulated peers — shows full pipeline on single device
+- **Fix planned:** Research @qvac SDK HyperswarmRuntime for real P2P in future
 - **Files:** `lib/p2p.js`
 
 ### No Real RMS Audio Data

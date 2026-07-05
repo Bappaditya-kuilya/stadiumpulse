@@ -17,6 +17,7 @@
 | `lib/pulse.js` | Working | Ties P2P + RMS + fusion + spike + notifications + overlay together |
 | `lib/notifications.js` | Working | expo-notifications wrapper |
 | `lib/cards.js` | **FIXED** — expo-file-system/legacy | Save cards to filesystem, share via expo-sharing |
+| `lib/demo.js` | **NEW** | Simulated peers + RMS for single-device demo |
 | `lib/caption.js` | **NEW** | QVAC LLM caption generator + static fallback |
 | `lib/dev-overlay.js` | Working | Hidden developer overlay (tap ··· to toggle) |
 | `design.md` | Done | Nothing Tech monochrome design system spec |
@@ -84,9 +85,12 @@
 ## What Works (on phone)
 - App boots without crash
 - Join screen renders correctly (Stadium Pulse / Leave / View Moment Card)
-- Auto-joins on app start
-- Moment Card screen renders (Moment #01 / 0' / Crowd Pulse 0% / Crowd Stirs)
-- Caption generation wired (static fallback, QVAC LLM on device)
+- Auto-joins on start
+- **Demo mode** — simulated peers, realistic crowd patterns, manual spike trigger
+- Live pulse % display updating in real-time
+- Spike detection fires from demo data → notification → Moment Card
+- Caption generation (static fallback, QVAC LDM on device)
+- Rules page with search (14 FAQ items: app + IFAB rules)
 - Save button (after expo-file-system/legacy fix)
 - Share button (after file path fix)
 - Navigation between screens

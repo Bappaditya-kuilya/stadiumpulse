@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { startPulse, stopPulse, getCollectivePulse } from "../lib/pulse";
+import { startPulse, stopPulse, getCollectivePulse, triggerManualSpike, isDemo } from "../lib/pulse";
 import { requestPermissions, onNotificationResponse } from "../lib/notifications";
 
 export default function JoinScreen() {
@@ -9,6 +9,7 @@ export default function JoinScreen() {
   const [status, setStatus] = useState("idle");
   const [pulse, setPulse] = useState(0);
   const [peerCount, setPeerCount] = useState(0);
+  const [demo, setDemo] = useState(false);
   const pulseRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -37,10 +38,11 @@ export default function JoinScreen() {
     });
 
     setStatus("connected");
+    setDemo(isDemo());
 
     pulseRef.current = setInterval(() => {
       setPulse(Math.round(getCollectivePulse()));
-    }, 1000);
+    }, 500);
   };
 
   const handleLeave = () => {
@@ -49,6 +51,11 @@ export default function JoinScreen() {
     setStatus("idle");
     setPulse(0);
     setPeerCount(0);
+    setDemo(false);
+  };
+
+  const handleSpike = () => {
+    triggerManualSpike();
   };
 
   return (
@@ -71,6 +78,12 @@ export default function JoinScreen() {
           <Text style={styles.status}>Listening to the crowd...</Text>
         )}
 
+        {demo && status === "connected" && (
+          <Pressable style={styles.spikeButton} onPress={handleSpike}>
+            <Text style={styles.spikeButtonText}>TRIGGER SPIKE</Text>
+          </Pressable>
+        )}
+
         <Pressable
           style={[styles.button, status === "connected" && styles.buttonActive]}
           onPress={status === "connected" ? handleLeave : handleJoin}
@@ -89,6 +102,10 @@ export default function JoinScreen() {
         <Pressable style={styles.rulesLink} onPress={() => router.push("/rules")}>
           <Text style={styles.rulesLinkText}>How it works →</Text>
         </Pressable>
+
+        {demo && (
+          <Text style={styles.demoTag}>DEMO MODE</Text>
+        )}
       </View>
     </View>
   );
@@ -146,6 +163,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#B8B8B8",
   },
+  spikeButton: {
+    backgroundColor: "#FF3B30",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 6,
+  },
+  spikeButtonText: {
+    fontFamily: "monospace",
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    letterSpacing: 0.05,
+  },
   button: {
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 32,
@@ -185,5 +215,12 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
     fontSize: 11,
     color: "#B8B8B8",
+  },
+  demoTag: {
+    fontFamily: "monospace",
+    fontSize: 9,
+    color: "#FF3B30",
+    letterSpacing: 0.1,
+    marginTop: 8,
   },
 });
