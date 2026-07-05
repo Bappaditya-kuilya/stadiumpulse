@@ -13,6 +13,7 @@ export default function JoinScreen() {
     const sub = onNotificationResponse((_data: any) => {
       router.push("/moment-card");
     });
+    handleJoin();
     return () => sub.remove();
   }, []);
 

@@ -1,11 +1,12 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { saveCard, shareCard } from "../lib/cards";
+import { getStaticCaption } from "../lib/caption";
 
-let latestSpike: { collective: number; peerCount: number; minute: number; personalMax: number } | null = null;
+let latestSpike: { collective: number; peerCount: number; minute: number; personalMax: number; caption: string } | null = null;
 let momentCount = 0;
 
-export function setSpikeData(data: { collective: number; peerCount: number; minute: number; personalMax: number }) {
+export function setSpikeData(data: { collective: number; peerCount: number; minute: number; personalMax: number; caption: string }) {
   latestSpike = data;
   momentCount++;
 }
@@ -21,18 +22,12 @@ export default function MomentCardScreen() {
     peerCount: 0,
     minute: 0,
     personalMax: 0,
+    caption: "",
   };
 
   const number = momentCount > 0 ? momentCount : 1;
 
-  const caption =
-    spike.collective > 90
-      ? "The Crowd Explodes"
-      : spike.collective > 70
-      ? "Collective Roar"
-      : spike.collective > 50
-      ? "Building Momentum"
-      : "Crowd Stirs";
+  const caption = spike.caption || getStaticCaption(spike.collective);
 
   const card = {
     number,
@@ -57,7 +52,7 @@ export default function MomentCardScreen() {
         <Text style={styles.momentNumber}>Moment #{String(number).padStart(2, "0")}</Text>
         <Text style={styles.minute}>{spike.minute}'</Text>
         <Text style={styles.pulse}>Crowd Pulse {card.pulse}%</Text>
-        <Text style={styles.caption}>{caption}</Text>
+        <Text style={styles.caption}>{caption || "Generating..."}</Text>
         <Text style={styles.meta}>
           {spike.peerCount + 1} nearby fans synchronized
         </Text>
